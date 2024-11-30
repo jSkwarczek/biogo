@@ -1,0 +1,18 @@
+[
+  {
+    "Username": "111",
+    "PasswordHash": "$2a$04$xho9.9LVMTkZxxGgmeEjgeEWg9zm2NhwlexqOHX2Mgu6f.uoC1uha",
+    "Email": "ambrekambremakambre@gmail.com",
+    "OtpSecret": "YXBVGVMZG4KV4P4EFWDEQPZQ4MPWZO4Q",
+    "Email2fa": true,
+    "EnableTotp": true
+  },
+  {
+    "Username": "123",
+    "PasswordHash": "$2a$04$DraEcGILLg2dUqVnNOeNp.UKX04IV1jeXAogtwV4Q9oXMtbgnBmpi",
+    "Email": "123@asd.123",
+    "OtpSecret": "LBSOLKLR52LQDQNJXEADNHWMTQP4OKPV",
+    "Email2fa": false,
+    "EnableTotp": false
+  }
+]
