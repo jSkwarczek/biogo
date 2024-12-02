@@ -1,20 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styled, { createGlobalStyle } from "styled-components";
 import API from "./API";
-import bg from "./assets/images/bg.jpg";
-
-const GlobalStyle = createGlobalStyle`
-  body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 16px;
-    color: white;
-  }
-`;
+import {
+  GlobalStyle,
+  Container,
+  RegisterForm,
+  Input,
+  CheckboxContainer,
+  CheckboxLabel,
+  Checkbox,
+  SubmitButton,
+  ErrorMessage,
+} from "./style";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -55,7 +52,7 @@ const Register = () => {
   return (
     <>
       <GlobalStyle />
-      <RegisterContainer>
+      <Container>
         <RegisterForm onSubmit={handleSubmit}>
           <Input
             type="text"
@@ -102,83 +99,9 @@ const Register = () => {
           <SubmitButton type="submit">Zarejestruj się</SubmitButton>
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </RegisterForm>
-      </RegisterContainer>
+      </Container>
     </>
   );
 };
-
-const RegisterContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-image: url(${bg});
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-`;
-
-const RegisterForm = styled.form`
-  width: 15vw;
-  display: flex;
-  flex-direction: column;
-  background-color: #433b7c;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  opacity: 0.92;
-`;
-
-const Input = styled.input`
-  margin-bottom: 10px;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  &::placeholder {
-    color: white;
-  }
-  &:focus {
-    outline: none;
-    border: 1px solid #fff;
-    background: transparent;
-  }
-`;
-
-const CheckboxContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-`;
-
-const Checkbox = styled.input`
-  margin-right: 10px;
-`;
-
-const SubmitButton = styled.button`
-  padding: 10px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  color: #ff7f7f;
-  margin-bottom: 10px;
-`;
 
 export default Register;

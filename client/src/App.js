@@ -23,7 +23,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/mfa" element={<MFA />} />
+        <Route
+          path="/mfa"
+          element={
+            <ProtectedRoute>
+              <MFA />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );

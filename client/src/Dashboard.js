@@ -1,5 +1,7 @@
 import React, { useContext } from "react";
 import AuthContext from "./AuthContext";
+import { Container, GlobalStyle, Button, PageTitle } from "./style";
+import catSpinningGif from "./assets/images/cat-spinning.gif";
 
 const Dashboard = () => {
   const { logout } = useContext(AuthContext);
@@ -15,32 +17,29 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Dashboard</h1>
-      <button onClick={handleLogout} style={{ marginBottom: "20px" }}>
-        Logout
-      </button>
-      <div style={{ display: "flex", justifyContent: "space-around" }}>
+    <>
+      <GlobalStyle />
+      <Container>
         <div
-          style={{ border: "1px solid #ccc", padding: "10px", width: "30%" }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
         >
-          <h2>Widget 1</h2>
-          <p>Some content for widget 1.</p>
+          <img
+            src={catSpinningGif}
+            alt="Spinning Cat"
+            style={{ marginTop: "10px", width: "500px", height: "auto" }}
+          />
+          <PageTitle>Witaj!</PageTitle>
+          <h1>Pomyślnie się zalogowałeś na własne (lub czyjeś) konto.</h1>
+          <Button onClick={handleLogout} style={{ marginTop: "10px" }}>
+            Wyloguj się
+          </Button>
         </div>
-        <div
-          style={{ border: "1px solid #ccc", padding: "10px", width: "30%" }}
-        >
-          <h2>Widget 2</h2>
-          <p>Some content for widget 2.</p>
-        </div>
-        <div
-          style={{ border: "1px solid #ccc", padding: "10px", width: "30%" }}
-        >
-          <h2>Widget 3</h2>
-          <p>Some content for widget 3.</p>
-        </div>
-      </div>
-    </div>
+      </Container>
+    </>
   );
 };
 

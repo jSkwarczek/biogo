@@ -1,0 +1,188 @@
+import styled, { createGlobalStyle } from "styled-components";
+import { Link } from "react-router-dom";
+import bg from "./assets/images/bg.jpg";
+import "@fontsource/roboto-slab";
+
+const GlobalStyle = createGlobalStyle`
+  body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Roboto Slab', sans-serif;
+    font-size: 16px;
+    color: white;
+  }
+`;
+
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-image: url(${bg});
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+`;
+
+const LoginForm = styled.form`
+  width: 20vw;
+  display: flex;
+  flex-direction: column;
+  background-color: #433b7c;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0.92;
+`;
+
+const RegisterForm = styled.form`
+  width: 15vw;
+  display: flex;
+  flex-direction: column;
+  background-color: #433b7c;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0.92;
+`;
+
+const Title = styled.h1`
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const PageTitle = styled.text`
+  font-size: 60px;
+  text-align: center;
+  align-self: center;
+  margin-bottom: 20px;
+`;
+
+const Input = styled.input`
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  &::placeholder {
+    color: white;
+  }
+  &:focus {
+    outline: none;
+    border: 1px solid #fff;
+    background: transparent;
+  }
+`;
+
+const Button = styled.button`
+  padding: 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: "Roboto Slab", sans-serif;
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const StyledLink = styled(Link)`
+  color: #007bff;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: #ff7f7f;
+  margin-bottom: 10px;
+  text-align: center;
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+`;
+
+const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+`;
+
+const Checkbox = styled.input`
+  margin-right: 10px;
+`;
+
+const SubmitButton = styled.button`
+  padding: 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const TOTPForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #433b7c;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0.95;
+`;
+
+const Secret = styled.p`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
+
+const Instructions = styled.p`
+  font-size: 16px;
+`;
+
+const QRCodeContainer = styled.div`
+  margin: 20px auto;
+`;
+
+const QRCodeInstructions = styled.p`
+  font-size: 16px;
+  text-align: center;
+`;
+
+export {
+  GlobalStyle,
+  Container,
+  LoginForm,
+  Title,
+  Input,
+  Button,
+  StyledLink,
+  ErrorMessage,
+  CheckboxContainer,
+  CheckboxLabel,
+  Checkbox,
+  RegisterForm,
+  SubmitButton,
+  PageTitle,
+  TOTPForm,
+  Secret,
+  Instructions,
+  QRCodeContainer,
+  QRCodeInstructions,
+};
