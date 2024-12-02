@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import AuthContext from "./AuthContext";
 import {
   GlobalStyle,
@@ -16,6 +16,12 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { login } = useContext(AuthContext);
+
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("isMFARequired");
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();

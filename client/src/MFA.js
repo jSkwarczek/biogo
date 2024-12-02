@@ -20,7 +20,6 @@ const MFA = () => {
     verifyMFA(code, totp)
       .then((response) => {
         if (response.status !== "success") {
-          // Handle MFA verification failure
           console.error("MFA verification failed");
         }
       })

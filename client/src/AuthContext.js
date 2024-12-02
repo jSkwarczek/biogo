@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "./API";
 
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         setIsMFARequired(false);
         localStorage.removeItem("isAuthenticated");
         localStorage.removeItem("user");
-        navigate("/"); // Redirect to login page
+        navigate("/");
       }
       return response;
     });

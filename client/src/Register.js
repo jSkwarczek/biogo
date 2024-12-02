@@ -37,7 +37,7 @@ const Register = () => {
               state: { otpSecret: response.otpSecret, url: response.url },
             });
           } else {
-            navigate("/"); // Redirect to login page after successful registration
+            navigate("/");
           }
         } else {
           setError(response.message || "Registration failed");
