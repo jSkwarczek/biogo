@@ -6,9 +6,7 @@ import Dashboard from "./Dashboard";
 import MFA from "./MFA";
 import Register from "./Register";
 import TOTPSecret from "./TOTPSecret";
-
-const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-const isMFARequired = localStorage.getItem("isMFARequired") === "true";
+import ProtectedRoute from "./ProtectedRoute";
 
 function App() {
   return (
@@ -18,8 +16,28 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/register/TOTP" element={<TOTPSecret />} />
 
-        {isAuthenticated && <Route path="/dashboard" element={<Dashboard />} />}
-        {isMFARequired && <Route path="/mfa" element={<MFA />} />}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute
+              condition={localStorage.getItem("isAuthenticated") === "true"}
+              redirectTo="/"
+            >
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mfa"
+          element={
+            <ProtectedRoute
+              condition={localStorage.getItem("isMFARequired") === "true"}
+              redirectTo="/"
+            >
+              <MFA />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );

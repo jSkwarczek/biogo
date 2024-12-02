@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }) => {
           setUser(response.username);
           localStorage.setItem("isAuthenticated", "true");
           localStorage.setItem("user", response.username);
+          setIsAuthenticated(true);
           navigate("/dashboard");
         } else {
           navigate("/mfa");
