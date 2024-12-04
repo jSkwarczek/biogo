@@ -1,21 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
+import AuthContext from "./AuthContext";
 
-const ProtectedRoute = ({ children }) => {
-  console.log(
-    "isAuthenticated",
-    localStorage.getItem("isAuthenticated") === "true"
-  );
-  console.log("isMFARequired", localStorage.getItem("isMFARequired"));
-  if (localStorage.getItem("isAuthenticated") !== "true") {
-    return <Navigate to="/" />;
-  }
+const ProtectedRoute = ({ children, condition, redirectTo }) => {
+  const { isAuthenticated, isMFARequired } = useContext(AuthContext);
 
-  if (
-    localStorage.getItem("isMFARequired") === "true" &&
-    window.location.pathname !== "/dashboard"
-  ) {
-    return <Navigate to="/mfa" />;
+  if (!condition) {
+    return <Navigate to={redirectTo} />;
   }
 
   return children;
