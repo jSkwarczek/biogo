@@ -135,7 +135,7 @@ const SubmitButton = styled.button`
   }
 `;
 
-const TOTPForm = styled.div`
+const TOTPForm = styled.form`
   display: flex;
   flex-direction: column;
   align-items: center;

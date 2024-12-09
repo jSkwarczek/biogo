@@ -20,7 +20,7 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute
-              condition={localStorage.getItem("isAuthenticated") === "true"}
+              path="/dashboard"
               redirectTo="/"
             >
               <Dashboard />
@@ -31,7 +31,7 @@ function App() {
           path="/mfa"
           element={
             <ProtectedRoute
-              condition={localStorage.getItem("isMFARequired") === "true"}
+              path="/mfa"
               redirectTo="/"
             >
               <MFA />

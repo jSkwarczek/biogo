@@ -16,6 +16,7 @@ const MFA = () => {
     useContext(AuthContext);
 
   const handleSubmit = (e) => {
+    console.log("wtf")
     e.preventDefault();
     verifyMFA(code, totp)
       .then((response) => {
@@ -50,7 +51,7 @@ const MFA = () => {
               onChange={(e) => setTotp(e.target.value)}
             />
           )}
-          <Button type="submit">Submit</Button>
+          <Button>Submit</Button>
         </Form>
       </Container>
     </>

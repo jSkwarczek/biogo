@@ -3,6 +3,9 @@ package funcs
 import (
 	"crypto/rand"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
@@ -93,94 +96,156 @@ func CheckHash(password, hash string) bool {
 }
 
 type User struct {
-	Username     string
-	PasswordHash string
-	Email        string
-	Email2fa     bool
-	OtpSecret    string
-	EnableTotp   bool
+	Username string
+	UserD    UserDetails
 }
 
-type UserData struct {
-	Users []User
-}
-
-func (ud *UserData) UsernameExists(username string) int {
-	for idx, u := range ud.Users {
-		if u.Username == username {
-			return idx
-		}
-	}
-	return -1
-}
-
-func (ud *UserData) Register(username, password, email, otpSecret string, email2fa, enableTotp bool) bool {
-	if ud.UsernameExists(username) != -1 {
-		return false
-	}
-
-	hash := GenerateHash(password)
-
-	newUser := User{username, hash, email, email2fa, otpSecret, enableTotp}
-	ud.Users = append(ud.Users, newUser)
-	return true
-}
-
-func (ud *UserData) Login(username, password string) bool {
-	userIndex := ud.UsernameExists(username)
-	if userIndex == -1 {
-		return false
-	}
-	return CheckHash(password, ud.Users[userIndex].PasswordHash)
-}
-
-type userJson struct {
-	Username     string `json:"Username"`
+type UserDetails struct {
 	PasswordHash string `json:"PasswordHash"`
-	EmailJ       string `json:"Email"`
+	Email        string `json:"Email"`
 	Email2fa     bool   `json:"Email2fa"`
 	OtpSecret    string `json:"OtpSecret"`
 	EnableTotp   bool   `json:"EnableTotp"`
 }
 
-func OpenDbXd() *UserData {
-	var dbList []userJson
-	jsonFile, err := os.Open("betterUsersDatabase.json")
-
-	if err != nil {
-		log.Fatalf("Cannot open file %s!\n", "'betterUsersDatabase.json'")
-	}
-
-	byteVal, _ := io.ReadAll(jsonFile)
-	err = json.Unmarshal(byteVal, &dbList)
-
-	if err != nil {
-		log.Fatalf("Cannot parse file %s!\n", "'betterUsersDatabase.json'")
-	}
-
-	var db []User
-	for _, u := range dbList {
-		db = append(db, User{u.Username, u.PasswordHash, u.EmailJ, u.Email2fa, u.OtpSecret, u.EnableTotp})
-	}
-
-	ud := UserData{db}
-	return &ud
+func (userD UserDetails) getUserDetailsString() string {
+	return fmt.Sprintf("\tHash: %s\n\tEmail: %s\n\tEmail 2FA enable: %t\n\tOTP secret: %s\n\tTOTP enable: %t\n", userD.PasswordHash, userD.Email, userD.Email2fa, userD.OtpSecret, userD.EnableTotp)
 }
 
-func WriteDbXd(db *UserData, filename string) {
-	b, err := json.Marshal(db.Users)
+type DB struct {
+	Db *badger.DB
+}
+
+func OpenDb(path string) (*DB, error) {
+	opts := badger.DefaultOptions(path)
+
+	opts.Logger = nil
+	badgerInstance, err := badger.Open(opts)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("opening kv: %w", err)
 	}
 
-	jsonFile, err := os.Create(filename)
+	return &DB{badgerInstance}, nil
+}
 
-	if err != nil {
-		log.Fatalf("Cannot create file %s!\n", filename)
+func (db *DB) UserExists(username string) (bool, error) {
+	var exists bool
+	err := db.Db.View(
+		func(tx *badger.Txn) error {
+			if val, err := tx.Get([]byte(username)); err != nil {
+				return err
+			} else if val != nil {
+				exists = true
+			}
+			return nil
+		})
+	if errors.Is(err, badger.ErrKeyNotFound) {
+		err = nil
+	}
+	return exists, err
+}
+
+func (db *DB) GetUserData(username string) (User, error) {
+	var userD UserDetails
+	err := db.Db.View(
+		func(txn *badger.Txn) error {
+			userItem, err := txn.Get([]byte(username))
+			if err != nil {
+				return err
+			}
+
+			var val []byte
+			val, err = userItem.ValueCopy(nil)
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(val, &userD)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+	return User{username, userD}, err
+}
+
+func (db *DB) AddUser(user User) error {
+	err := db.Db.Update(func(txn *badger.Txn) error {
+		userDetailsBytes, err := json.Marshal(user.UserD)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		return txn.Set([]byte(user.Username), userDetailsBytes)
+	})
+
+	return err
+}
+
+func (db *DB) Register(username, password, email, otpSecret string, email2fa, enableTotp bool) error {
+	if userExists, err := db.UserExists(username); userExists || err != nil {
+		return errors.New("user already exists")
 	}
 
-	_, err = jsonFile.Write(b)
+	hash := GenerateHash(password)
+
+	newUserDetails := UserDetails{hash, email, email2fa, otpSecret, enableTotp}
+	newUser := User{username, newUserDetails}
+
+	err := db.AddUser(newUser)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
+}
+
+func (db *DB) Login(username, password string) bool {
+	if userExists, err := db.UserExists(username); !userExists || err != nil {
+		return false
+	}
+
+	user, err := db.GetUserData(username)
+	if err != nil {
+		return false
+	}
+
+	return CheckHash(password, user.UserD.PasswordHash)
+}
+
+func (db *DB) DeleteUser(username string) error {
+	err := db.Db.Update(func(txn *badger.Txn) error {
+		return txn.Delete([]byte(username))
+	})
+
+	return err
+}
+
+func (db *DB) PrintDb() error {
+	err := db.Db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			username := item.Key()
+			var val []byte
+			var userD UserDetails
+
+			val, err := item.ValueCopy(nil)
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(val, &userD)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("User: %s\nUser details:\n%s\n", username, userD.getUserDetailsString())
+		}
+		return nil
+	})
+
+	return err
 }

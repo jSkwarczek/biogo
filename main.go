@@ -13,11 +13,23 @@ import (
 	"time"
 )
 
-var db *funcs.UserData
+var db *funcs.DB
 var store *sessions.CookieStore
 
 func main() {
-	db = funcs.OpenDbXd()
+	var err error
+	db, err = funcs.OpenDb("./db")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	//err = db.PrintDb()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//return
 
 	http.HandleFunc("/login", loginPostHandler)
 	http.HandleFunc("/logout", logoutPostHandler)
@@ -57,17 +69,25 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err := db.GetUserData(ld.Username)
+	if err != nil {
+		response := structs.BasicResponse{Status: "error", Message: err.Error()}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		err = json.NewEncoder(w).Encode(response)
+	}
+
 	session.Values["username"] = ld.Username
 	session.Values["mfa_verified"] = true
 
-	if db.Users[db.UsernameExists(ld.Username)].Email2fa || db.Users[db.UsernameExists(ld.Username)].EnableTotp {
+	if user.UserD.Email2fa || user.UserD.EnableTotp {
 		session.Values["mfa_verified"] = false
 	}
 
-	if db.Users[db.UsernameExists(ld.Username)].Email2fa {
+	if user.UserD.Email2fa {
 		code := funcs.GenerateCode()
 		fmt.Println(code)
-		err := funcs.SendEmail(db.Users[db.UsernameExists(ld.Username)].Email, code)
+		// err := funcs.SendEmail(user.UserD.Email, code)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -83,8 +103,8 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	response := structs.LoginResponse{
 		Status:            "success",
 		Message:           "MFA code sent",
-		IsEmail2FAEnabled: db.Users[db.UsernameExists(ld.Username)].Email2fa,
-		IsTOTPEnabled:     db.Users[db.UsernameExists(ld.Username)].EnableTotp}
+		IsEmail2FAEnabled: user.UserD.Email2fa,
+		IsTOTPEnabled:     user.UserD.EnableTotp}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
@@ -110,8 +130,8 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	var response any
 
-	if db.Register(rd.Username, rd.Password, rd.Email, otpSecret, rd.EnableEmail2FA, rd.EnableTOTP) {
-		funcs.WriteDbXd(db, "betterUsersDatabase.json")
+	err = db.Register(rd.Username, rd.Password, rd.Email, otpSecret, rd.EnableEmail2FA, rd.EnableTOTP)
+	if err == nil {
 		response = structs.RegisterResponse{Status: "success", OtpSecret: otpSecret, Url: url}
 	} else {
 		response = structs.BasicResponse{Status: "error", Message: "User already exists."}
@@ -138,9 +158,10 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 	var validateTotp bool
 
 	username := session.Values["username"]
+	user, err := db.GetUserData(fmt.Sprintf("%v", username))
 	validateEmailMfa := vd.Code == session.Values["mfa_code"] || !vd.Email2FA
 	if vd.EnableOTP && username != nil {
-		validateTotp, _ = totp.ValidateCustom(vd.Totp, db.Users[db.UsernameExists(fmt.Sprintf("%v", username))].OtpSecret, time.Now(), totp.ValidateOpts{
+		validateTotp, _ = totp.ValidateCustom(vd.Totp, user.UserD.OtpSecret, time.Now(), totp.ValidateOpts{
 			Period:    30,
 			Skew:      2,
 			Digits:    otp.DigitsSix,
