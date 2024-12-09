@@ -46,6 +46,17 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
 
+func encodeError(w http.ResponseWriter, errorMsg string) {
+	response := structs.BasicResponse{Status: "error", Message: errorMsg}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Total failure.", http.StatusInternalServerError)
+	}
+	return
+}
+
 func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed.", http.StatusMethodNotAllowed)
@@ -55,26 +66,21 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	var ld structs.LoginData
 	err := json.NewDecoder(r.Body).Decode(&ld)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
 		return
 	}
 
 	session, _ := store.Get(r, "session")
 
 	if !db.Login(ld.Username, ld.Password) {
-		response := structs.BasicResponse{Status: "error", Message: "Login or username incorrect."}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		err = json.NewEncoder(w).Encode(response)
+		encodeError(w, "Login or username incorrect.")
 		return
 	}
 
 	user, err := db.GetUserData(ld.Username)
 	if err != nil {
-		response := structs.BasicResponse{Status: "error", Message: err.Error()}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		err = json.NewEncoder(w).Encode(response)
+		encodeError(w, err.Error())
+		return
 	}
 
 	session.Values["username"] = ld.Username
@@ -87,9 +93,9 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	if user.UserD.Email2fa {
 		code := funcs.GenerateCode()
 		fmt.Println(code)
-		// err := funcs.SendEmail(user.UserD.Email, code)
+		err = funcs.SendEmail(user.UserD.Email, code)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			encodeError(w, err.Error())
 			return
 		}
 		session.Values["mfa_code"] = code
@@ -97,7 +103,8 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = session.Save(r, w)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
+		return
 	}
 
 	response := structs.LoginResponse{
@@ -108,7 +115,8 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
+		return
 	}
 	return
 }
@@ -122,7 +130,12 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 	var rd structs.RegisterData
 	err := json.NewDecoder(r.Body).Decode(&rd)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
+		return
+	}
+
+	if rd.Username == "" || rd.Email == "" || rd.Password == "" {
+		encodeError(w, "Blank user info.")
 		return
 	}
 
@@ -151,7 +164,7 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 	var vd structs.VerifyData
 	err := json.NewDecoder(r.Body).Decode(&vd)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
 		return
 	}
 
@@ -161,12 +174,17 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := db.GetUserData(fmt.Sprintf("%v", username))
 	validateEmailMfa := vd.Code == session.Values["mfa_code"] || !vd.Email2FA
 	if vd.EnableOTP && username != nil {
-		validateTotp, _ = totp.ValidateCustom(vd.Totp, user.UserD.OtpSecret, time.Now(), totp.ValidateOpts{
+		validateTotp, err = totp.ValidateCustom(vd.Totp, user.UserD.OtpSecret, time.Now(), totp.ValidateOpts{
 			Period:    30,
 			Skew:      2,
 			Digits:    otp.DigitsSix,
 			Algorithm: otp.AlgorithmSHA1,
 		})
+
+		if err != nil {
+			encodeError(w, err.Error())
+			return
+		}
 	} else {
 		validateTotp = true
 	}
@@ -179,7 +197,8 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 		session.Values["mfa_code"] = nil
 		err = session.Save(r, w)
 		if err != nil {
-			log.Fatal(err)
+			encodeError(w, err.Error())
+			return
 		}
 		response = structs.BasicResponse{Status: "success", Message: "MFA verified."}
 	} else {
@@ -200,13 +219,15 @@ func logoutPostHandler(w http.ResponseWriter, r *http.Request) {
 	session.Values["mfa_verified"] = false
 	err := session.Save(r, w)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
+		return
 	}
 	response := structs.BasicResponse{Status: "success", Message: "Logged out."}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
+		return
 	}
 }
 
@@ -227,7 +248,8 @@ func isLoggedInGetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
+		return
 	}
 }
 
@@ -249,6 +271,7 @@ func userGetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Fatal(err)
+		encodeError(w, err.Error())
+		return
 	}
 }
