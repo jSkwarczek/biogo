@@ -24,13 +24,6 @@ func main() {
 		return
 	}
 
-	//err = db.PrintDb()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//return
-
 	http.HandleFunc("/login", loginPostHandler)
 	http.HandleFunc("/logout", logoutPostHandler)
 	http.HandleFunc("/register", registerPostHandler)
@@ -38,6 +31,8 @@ func main() {
 
 	http.HandleFunc("/user", userGetHandler)
 	http.HandleFunc("/is_logged_in", isLoggedInGetHandler)
+
+	http.HandleFunc("/debug", debugGetHandler)
 
 	store = sessions.NewCookieStore([]byte("janielubiecreepery"))
 
@@ -274,4 +269,22 @@ func userGetHandler(w http.ResponseWriter, r *http.Request) {
 		encodeError(w, err.Error())
 		return
 	}
+}
+
+func debugGetHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := db.PrintDb()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = fmt.Fprintf(w, `Check server console for more informations!`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
 }
