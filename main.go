@@ -24,6 +24,13 @@ func main() {
 		return
 	}
 
+	defer func() {
+		err = db.Db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	http.HandleFunc("/login", loginPostHandler)
 	http.HandleFunc("/logout", logoutPostHandler)
 	http.HandleFunc("/register", registerPostHandler)
