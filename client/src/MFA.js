@@ -1,13 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import AuthContext from "./AuthContext";
-import {
-  GlobalStyle,
-  Button,
-  Container,
-  TOTPForm as Form,
-  Input,
-  Title,
-} from "./style";
+import { GlobalStyle, Button, Container, Form, Input, Title } from "./style";
 
 const MFA = () => {
   const [code, setCode] = useState("");
@@ -16,7 +9,7 @@ const MFA = () => {
     useContext(AuthContext);
 
   const handleSubmit = (e) => {
-    console.log("wtf")
+    console.log("wtf");
     e.preventDefault();
     verifyMFA(code, totp)
       .then((response) => {
@@ -28,6 +21,10 @@ const MFA = () => {
         console.error("Error during MFA verification:", error);
       });
   };
+
+  useEffect(() => {
+    document.title = "Biogo - MFA";
+  }, []);
 
   return (
     <>

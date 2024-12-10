@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./AuthContext";
 import Login from "./Login";
@@ -19,10 +19,7 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute
-              path="/dashboard"
-              redirectTo="/"
-            >
+            <ProtectedRoute path="/dashboard" redirectTo="/">
               <Dashboard />
             </ProtectedRoute>
           }
@@ -30,10 +27,7 @@ function App() {
         <Route
           path="/mfa"
           element={
-            <ProtectedRoute
-              path="/mfa"
-              redirectTo="/"
-            >
+            <ProtectedRoute path="/mfa" redirectTo="/">
               <MFA />
             </ProtectedRoute>
           }

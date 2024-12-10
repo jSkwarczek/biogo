@@ -8,7 +8,14 @@ const API = {
       body: JSON.stringify({ username, password }),
     }).then((res) => res.json());
   },
-  register: (username, password, email, enableEmail2FA, enableTOTP) => {
+  register: (
+    username,
+    password,
+    email,
+    secondEmail,
+    enableEmail2FA,
+    enableTOTP
+  ) => {
     return fetch("/api/register", {
       method: "POST",
       headers: {
@@ -18,6 +25,7 @@ const API = {
         username,
         password,
         email,
+        secondEmail,
         enableEmail2FA,
         enableTOTP,
         otpSecret: "",

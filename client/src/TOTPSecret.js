@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import {
@@ -6,7 +6,7 @@ import {
   GlobalStyle,
   Button,
   Title,
-  TOTPForm,
+  Form,
   Secret,
   Instructions,
   QRCodeContainer,
@@ -22,11 +22,15 @@ const TOTPSecret = () => {
     navigate("/");
   };
 
+  useEffect(() => {
+    document.title = "Biogo - TOTP";
+  }, []);
+
   return (
     <>
       <GlobalStyle />
       <Container>
-        <TOTPForm>
+        <Form>
           <Title>Your TOTP Secret</Title>
           <Secret>{otpSecret}</Secret>
           <Instructions>
@@ -44,7 +48,7 @@ const TOTPSecret = () => {
             </>
           )}
           <Button onClick={handleReturnToLogin}>Return to Login</Button>
-        </TOTPForm>
+        </Form>
       </Container>
     </>
   );
