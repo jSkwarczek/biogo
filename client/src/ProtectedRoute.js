@@ -7,7 +7,7 @@ const ProtectedRoute = ({ children, path, redirectTo }) => {
 
   if (path === "/dashboard") {
     condition = localStorage.getItem("isAuthenticated") === "true";
-  } else if (path === "/mfa") {
+  } else if (path === "/mfa" || path === "/facerecog") {
     condition = localStorage.getItem("isMFARequired") === "true";
   }
 

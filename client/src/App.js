@@ -7,6 +7,7 @@ import MFA from "./MFA";
 import Register from "./Register";
 import TOTPSecret from "./TOTPSecret";
 import ProtectedRoute from "./ProtectedRoute";
+import FaceRecognition from "./FaceRecognition";
 
 function App() {
   return (
@@ -32,6 +33,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* <Route
+          path="/facerecog"
+          element={
+            <ProtectedRoute path="/facerecog" redirectTo="/">
+              <FaceRecognition />
+            </ProtectedRoute>
+          }
+        ></Route> */}
+        <Route path="/facerecog" element={<FaceRecognition />} />
       </Routes>
     </AuthProvider>
   );
