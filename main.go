@@ -5,12 +5,13 @@ import (
 	"biogo/structs"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/sessions"
-	"github.com/pquerna/otp"
-	"github.com/pquerna/otp/totp"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/sessions"
+	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/totp"
 )
 
 var db *funcs.DB

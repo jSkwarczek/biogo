@@ -3,7 +3,7 @@ import AuthContext from "./AuthContext";
 import {
   GlobalStyle,
   Container,
-  LoginForm,
+  Form,
   Title,
   Input,
   Button,
@@ -30,51 +30,55 @@ const Login = () => {
     setError("");
 
     login(username, password)
-        .then((response) => {
-          if (response.status !== "success") {
-            setError(response.message || "Unknown error");
-            setIsSubmitting(false);
-          }
-        })
-        .catch((error) => {
-          setError("Błąd podczas logowania: " + error.message);
+      .then((response) => {
+        if (response.status !== "success") {
+          setError(response.message || "Unknown error");
           setIsSubmitting(false);
-          console.error("Error during login:", error);
-        });
+        }
+      })
+      .catch((error) => {
+        setError("Błąd podczas logowania: " + error.message);
+        setIsSubmitting(false);
+        console.error("Error during login:", error);
+      });
   };
 
+  useEffect(() => {
+    document.title = "Biogo - Logowanie";
+  }, []);
+
   return (
-      <>
-        <GlobalStyle />
-        <Container>
-          <div>
-            <LoginForm onSubmit={handleSubmit}>
-              <Title>Witaj!</Title>
-              {error && <ErrorMessage>{error}</ErrorMessage>}
-              <Input
-                  placeholder="Login"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={isSubmitting}
-              />
-              <Input
-                  type="password"
-                  placeholder="Hasło"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting}
-              />
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Logowanie..." : "Zaloguj się"}
-              </Button>
-            </LoginForm>
-            <p style={{ textAlign: "center", marginTop: "20px" }}>
-              Nie masz jeszcze konta?{" "}
-              <StyledLink to="/register">Zarejestruj się tu</StyledLink>
-            </p>
-          </div>
-        </Container>
-      </>
+    <>
+      <GlobalStyle />
+      <Container>
+        <div>
+          <Form onSubmit={handleSubmit} style={{ width: "20vw" }}>
+            <Title>Witaj!</Title>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            <Input
+              placeholder="Login"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={isSubmitting}
+            />
+            <Input
+              type="password"
+              placeholder="Hasło"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
+            />
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Logowanie..." : "Zaloguj się"}
+            </Button>
+          </Form>
+          <p style={{ textAlign: "center", marginTop: "20px" }}>
+            Nie masz jeszcze konta?{" "}
+            <StyledLink to="/register">Zarejestruj się tu</StyledLink>
+          </p>
+        </div>
+      </Container>
+    </>
   );
 };
 

@@ -26,19 +26,7 @@ const Container = styled.div`
   background-position: center;
 `;
 
-const LoginForm = styled.form`
-  width: 20vw;
-  display: flex;
-  flex-direction: column;
-  background-color: #433b7c;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  opacity: 0.92;
-`;
-
-const RegisterForm = styled.form`
-  width: 15vw;
+const Form = styled.form`
   display: flex;
   flex-direction: column;
   background-color: #433b7c;
@@ -68,6 +56,7 @@ const Input = styled.input`
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.25);
   color: white;
+  transition: background 0.3s ease, border 0.3s ease;
   &::placeholder {
     color: white;
   }
@@ -75,6 +64,10 @@ const Input = styled.input`
     outline: none;
     border: 1px solid #fff;
     background: transparent;
+  }
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
   }
 `;
 
@@ -87,9 +80,33 @@ const Button = styled.button`
   border-radius: 4px;
   cursor: pointer;
   font-family: "Roboto Slab", sans-serif;
+  transition: background 0.3s ease, border 0.3s ease;
   &:hover {
     background-color: #0056b3;
   }
+`;
+
+const SmallButton = styled.button`
+  width: 30px;
+  height: 30px;
+  position: relative;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: "Roboto Slab", sans-serif;
+  transition: background 0.3s ease, border 0.3s ease;
+  &:hover {
+    background-color: #0056b3;
+  }
+  margin-bottom: 10px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const StyledLink = styled(Link)`
@@ -115,35 +132,15 @@ const CheckboxContainer = styled.div`
 const CheckboxLabel = styled.label`
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 `;
 
-const Checkbox = styled.input`
+const Checkbox = styled.input.attrs({ type: "checkbox" })`
+  display: inline-block;
+  place-content: center;
   margin-right: 10px;
-`;
-
-const SubmitButton = styled.button`
-  padding: 10px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const TOTPForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #433b7c;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  opacity: 0.95;
+  height: 20px;
+  width: 20px;
 `;
 
 const Secret = styled.p`
@@ -168,7 +165,7 @@ const QRCodeInstructions = styled.p`
 export {
   GlobalStyle,
   Container,
-  LoginForm,
+  Form,
   Title,
   Input,
   Button,
@@ -177,12 +174,10 @@ export {
   CheckboxContainer,
   CheckboxLabel,
   Checkbox,
-  RegisterForm,
-  SubmitButton,
   PageTitle,
-  TOTPForm,
   Secret,
   Instructions,
   QRCodeContainer,
   QRCodeInstructions,
+  SmallButton,
 };

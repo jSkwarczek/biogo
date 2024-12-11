@@ -1,23 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "./API";
 import {
   GlobalStyle,
   Container,
-  RegisterForm,
+  Form,
   Input,
   CheckboxContainer,
   CheckboxLabel,
   Checkbox,
-  SubmitButton,
+  Button,
   ErrorMessage,
+  SmallButton,
 } from "./style";
+
+function evalPasswordStrength(password) {
+  if (!password) return "";
+
+  if (password.length < 8) return "Weak";
+  else if (password.length < 14) return "Medium";
+  else return "Strong";
+}
 
 const Register = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState("");
   const [email, setEmail] = useState("");
+  const [email2, setEmail2] = useState("");
+  const [multipleEmails, setMultipleEmails] = useState(false);
   const [enableEmail2FA, setEnableEmail2FA] = useState(false);
   const [enableTOTP, setEnableTOTP] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +41,7 @@ const Register = () => {
       setError("Passwords do not match");
       return;
     }
-    API.register(username, password, email, enableEmail2FA, enableTOTP)
+    API.register(username, password, email, email2, enableEmail2FA, enableTOTP)
       .then((response) => {
         if (response.status === "success") {
           if (enableTOTP) {
@@ -49,11 +61,15 @@ const Register = () => {
       });
   };
 
+  useEffect(() => {
+    document.title = "Biogo - Rejestracja";
+  }, []);
+
   return (
     <>
       <GlobalStyle />
       <Container>
-        <RegisterForm onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} style={{ width: "15vw" }}>
           <Input
             type="text"
             placeholder="Nazwa użytkownika"
@@ -64,7 +80,10 @@ const Register = () => {
             type="password"
             placeholder="Hasło"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setPasswordStrength(evalPasswordStrength(e.target.value));
+            }}
           />
           <Input
             type="password"
@@ -72,12 +91,59 @@ const Register = () => {
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
           />
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <CheckboxLabel>
+            Password strength:
+            <span
+              style={{
+                color:
+                  passwordStrength === "Strong"
+                    ? "lightgreen"
+                    : passwordStrength === "Medium"
+                    ? "orange"
+                    : "red",
+                marginLeft: "5px",
+              }}
+            >
+              {passwordStrength}
+            </span>
+          </CheckboxLabel>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <SmallButton
+              type="button"
+              onClick={() => setMultipleEmails(true)}
+              disabled={multipleEmails}
+              style={{ backgroundColor: multipleEmails ? "gray" : "" }}
+            >
+              +
+            </SmallButton>
+          </div>
+          {multipleEmails && (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <Input
+                type="email"
+                placeholder="Dodatkowy email"
+                value={email2}
+                onChange={(e) => setEmail2(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <SmallButton
+                type="button"
+                onClick={() => {
+                  setMultipleEmails(false);
+                  setEmail2("");
+                }}
+              >
+                -
+              </SmallButton>
+            </div>
+          )}
           <CheckboxContainer>
             <CheckboxLabel>
               <Checkbox
@@ -96,9 +162,9 @@ const Register = () => {
               TOTP
             </CheckboxLabel>
           </CheckboxContainer>
-          <SubmitButton type="submit">Zarejestruj się</SubmitButton>
+          <Button type="submit">Zarejestruj się</Button>
           {error && <ErrorMessage>{error}</ErrorMessage>}
-        </RegisterForm>
+        </Form>
       </Container>
     </>
   );

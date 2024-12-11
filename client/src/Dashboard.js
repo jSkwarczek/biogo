@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import AuthContext from "./AuthContext";
 import { Container, GlobalStyle, Button, PageTitle } from "./style";
 import catSpinningGif from "./assets/images/cat-spinning.gif";
@@ -15,6 +15,10 @@ const Dashboard = () => {
       }
     });
   };
+
+  useEffect(() => {
+    document.title = "Biogo - Panel użytkownika";
+  }, []);
 
   return (
     <>
