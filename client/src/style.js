@@ -154,7 +154,9 @@ const Instructions = styled.p`
 `;
 
 const QRCodeContainer = styled.div`
+  padding: 25px;
   margin: 20px auto;
+  background-color: #fff;
 `;
 
 const QRCodeInstructions = styled.p`
