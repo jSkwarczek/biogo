@@ -6,6 +6,9 @@
 - go (>=1.23.4)
 - nodejs (>=23.3.0)
 - npm (10.9.0)
+- python
+- pip
+- cmake
 - gcc (>=13.2.0)
 - libjpeg
 - dlib (>=19.10)
@@ -21,4 +24,10 @@
    ```bash
    go mod tidy
    go run main.go
+   ```
+   
+3. W katalogu *model* wykonujemy:
+   ```bash
+   pip install -r requirements.txt
+   python main.py
    ```

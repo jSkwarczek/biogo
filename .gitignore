@@ -1,2 +1,4 @@
 settings/
 db/
+model/.venv
+model/train

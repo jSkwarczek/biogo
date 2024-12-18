@@ -1,0 +1,23 @@
+from flask import Flask, request, jsonify
+from funcs import *
+
+app = Flask(__name__)
+
+@app.route("/add_to_model", methods=["POST"])
+def add_to_model():
+    contents = request.json
+    append_new_face_to_model(contents["username"], contents["imgs"])
+    return jsonify({"status": "success"})
+
+@app.route("/match", methods=["POST"])
+def match():
+    contents = request.json
+    username = recognize_face(contents["img"])
+    if username != contents["username"] or username is None:
+        return jsonify({"status": "error"})
+
+    return jsonify({"status": "success"})
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=7000, debug=True)
