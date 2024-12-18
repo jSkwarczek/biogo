@@ -6,9 +6,9 @@
 - go (>=1.23.4)
 - nodejs (>=23.3.0)
 - npm (10.9.0)
-- python
-- pip
-- cmake
+- python (>=3.12.3)
+- pip (>=24.3.1)
+- cmake (>=3.28.3)
 - gcc (>=13.2.0)
 - libjpeg
 - dlib (>=19.10)
