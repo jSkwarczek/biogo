@@ -15,7 +15,7 @@ const API = {
     secondEmail,
     enableEmail2FA,
     enableTOTP,
-    photo
+    photos
   ) => {
     return fetch("/api/register", {
       method: "POST",
@@ -30,7 +30,7 @@ const API = {
         enableEmail2FA,
         enableTOTP,
         otpSecret: "",
-        photo,
+        photos,
       }),
     }).then((res) => res.json());
   },

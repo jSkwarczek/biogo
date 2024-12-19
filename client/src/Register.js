@@ -33,21 +33,24 @@ const Register = () => {
   const [enableEmail2FA, setEnableEmail2FA] = useState(false);
   const [enableTOTP, setEnableTOTP] = useState(false);
   const [error, setError] = useState("");
-  const [photo, setPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]);
   const navigate = useNavigate();
 
   const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
+    const files = Array.from(e.target.files);
+    const validFiles = files.filter((file) => file.type.startsWith("image/"));
+    if (validFiles.length > 25) {
+      setError("You can upload up to 25 photos.");
+      return;
+    }
+    const readers = validFiles.map((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhoto(reader.result);
+        setPhotos((prevPhotos) => [...prevPhotos, reader.result]);
       };
       reader.readAsDataURL(file);
-    } else {
-      setPhoto(null);
-      setError("Please upload a valid image file.");
-    }
+      return reader;
+    });
   };
 
   const handleSubmit = (e) => {
@@ -56,8 +59,8 @@ const Register = () => {
       setError("Passwords do not match");
       return;
     }
-    if (!photo) {
-      setError("Please upload a photo");
+    if (photos.length < 3) {
+      setError("Please upload at least three photos.");
       return;
     }
     API.register(
@@ -67,7 +70,7 @@ const Register = () => {
       email2,
       enableEmail2FA,
       enableTOTP,
-      photo
+      photos
     )
       .then((response) => {
         if (response.status === "success") {
@@ -191,20 +194,12 @@ const Register = () => {
           </CheckboxContainer>
           <div>
             <CheckboxLabel>Biometrics Photo</CheckboxLabel>
-            <input type="file" accept="image/*" onChange={handlePhotoUpload} />
-            {photo && (
-              <div>
-                <img
-                  src={photo}
-                  alt="UserPhotos"
-                  style={{
-                    borderRadius: "15px",
-                    marginBottom: "10px",
-                    height: "300px",
-                  }}
-                />
-              </div>
-            )}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handlePhotoUpload}
+            />
           </div>
           <Button type="submit" style={{ marginTop: "10px" }}>
             Zarejestruj się
