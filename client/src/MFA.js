@@ -1,17 +1,29 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import AuthContext from "./AuthContext";
-import { GlobalStyle, Button, Container, Form, Input, Title } from "./style";
+import {
+  GlobalStyle,
+  Button,
+  Container,
+  Form,
+  Input,
+  Title,
+  DefNotForm,
+} from "./style";
+import Webcam from "react-webcam";
 
 const MFA = () => {
   const [code, setCode] = useState("");
   const [totp, setTotp] = useState("");
+  const webcamRef = useRef(null);
+  const [photo, setPhoto] = useState(null);
+  const [photoConfirmed, setPhotoConfirmed] = useState(false);
   const { verifyMFA, isEmail2FAEnabled, isTOTPEnabled } =
     useContext(AuthContext);
 
   const handleSubmit = (e) => {
-    console.log("wtf");
     e.preventDefault();
-    verifyMFA(code, totp)
+    console.log("MFA verification in progress...");
+    verifyMFA(code, totp, photo)
       .then((response) => {
         if (response.status !== "success") {
           console.error("MFA verification failed");
@@ -22,6 +34,11 @@ const MFA = () => {
       });
   };
 
+  const handleTakePhoto = () => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    setPhoto(imageSrc);
+  };
+
   useEffect(() => {
     document.title = "Biogo - MFA";
   }, []);
@@ -30,26 +47,79 @@ const MFA = () => {
     <>
       <GlobalStyle />
       <Container>
-        <Form onSubmit={handleSubmit}>
-          <Title>Enter MFA Codes</Title>
-          {isEmail2FAEnabled && (
-            <Input
-              type="text"
-              placeholder="Email Code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+        {photoConfirmed && (
+          <Form onSubmit={handleSubmit}>
+            <Title>Submit MFA</Title>
+            <img
+              src={photo}
+              alt="BiometryPhoto"
+              style={{
+                borderRadius: "15px",
+                marginBottom: "10px",
+                width: "300px",
+                alignSelf: "center",
+              }}
             />
-          )}
-          {isTOTPEnabled && (
-            <Input
-              type="text"
-              placeholder="TOTP Code"
-              value={totp}
-              onChange={(e) => setTotp(e.target.value)}
-            />
-          )}
-          <Button>Submit</Button>
-        </Form>
+            {isEmail2FAEnabled && (
+              <Input
+                type="text"
+                placeholder="Email Code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
+            )}
+            {isTOTPEnabled && (
+              <Input
+                type="text"
+                placeholder="TOTP Code"
+                value={totp}
+                onChange={(e) => setTotp(e.target.value)}
+              />
+            )}
+            <Button>Submit</Button>
+          </Form>
+        )}
+        {!photoConfirmed && (
+          <DefNotForm
+            style={{
+              opacity: "1",
+            }}
+          >
+            {!photo && (
+              <>
+                <Title>W celu weryfikacji zrób zdjęcie swojej twarzy</Title>
+                <Webcam
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  style={{
+                    borderRadius: "15px",
+                    marginBottom: "10px",
+                  }}
+                />
+                <Button onClick={handleTakePhoto}>Zrób zdjęcie</Button>
+              </>
+            )}
+            {photo && (
+              <>
+                <Title>Wybrane zdjęcie</Title>
+                <img
+                  src={photo}
+                  alt="BiometryPhoto"
+                  style={{
+                    borderRadius: "15px",
+                    marginBottom: "10px",
+                  }}
+                />
+                <Button onClick={() => setPhoto(null)}>
+                  Zrób nowe zdjęcie
+                </Button>
+                <Button onClick={() => setPhotoConfirmed(true)}>
+                  Potwierdź zdjęcie
+                </Button>
+              </>
+            )}
+          </DefNotForm>
+        )}
       </Container>
     </>
   );

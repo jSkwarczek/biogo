@@ -24,38 +24,30 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("isMFARequired", "true");
         setIsEmail2FAEnabled(response.isEmail2FAEnabled);
         setIsTOTPEnabled(response.isTOTPEnabled);
-        if (
-          response.isEmail2FAEnabled === false &&
-          response.isTOTPEnabled === false
-        ) {
-          localStorage.setItem("isMFARequired", "false");
-          setUser(response.username);
-          localStorage.setItem("isAuthenticated", "true");
-          localStorage.setItem("user", response.username);
-          setIsAuthenticated(true);
-          navigate("/dashboard");
-        } else {
-          navigate("/mfa");
-        }
+        navigate("/mfa");
       }
       return response;
     });
   };
 
-  const verifyMFA = (code, totp) => {
-    return API.verifyMFA(code, totp, isEmail2FAEnabled, isTOTPEnabled).then(
-      (response) => {
-        if (response.status === "success") {
-          setIsAuthenticated(true);
-          setIsMFARequired(false);
-          setUser(response.username);
-          localStorage.setItem("isAuthenticated", "true");
-          localStorage.setItem("user", response.username);
-          navigate("/dashboard");
-        }
-        return response;
+  const verifyMFA = (code, totp, photo) => {
+    return API.verifyMFA(
+      code,
+      totp,
+      isEmail2FAEnabled,
+      isTOTPEnabled,
+      photo
+    ).then((response) => {
+      if (response.status === "success") {
+        setIsAuthenticated(true);
+        setIsMFARequired(false);
+        setUser(response.username);
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("user", response.username);
+        navigate("/dashboard");
       }
-    );
+      return response;
+    });
   };
 
   const logout = () => {

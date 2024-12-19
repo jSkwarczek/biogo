@@ -33,7 +33,22 @@ const Register = () => {
   const [enableEmail2FA, setEnableEmail2FA] = useState(false);
   const [enableTOTP, setEnableTOTP] = useState(false);
   const [error, setError] = useState("");
+  const [photo, setPhoto] = useState(null);
   const navigate = useNavigate();
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhoto(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPhoto(null);
+      setError("Please upload a valid image file.");
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,7 +56,19 @@ const Register = () => {
       setError("Passwords do not match");
       return;
     }
-    API.register(username, password, email, email2, enableEmail2FA, enableTOTP)
+    if (!photo) {
+      setError("Please upload a photo");
+      return;
+    }
+    API.register(
+      username,
+      password,
+      email,
+      email2,
+      enableEmail2FA,
+      enableTOTP,
+      photo
+    )
       .then((response) => {
         if (response.status === "success") {
           if (enableTOTP) {
@@ -162,7 +189,26 @@ const Register = () => {
               TOTP
             </CheckboxLabel>
           </CheckboxContainer>
-          <Button type="submit">Zarejestruj się</Button>
+          <div>
+            <CheckboxLabel>Biometrics Photo</CheckboxLabel>
+            <input type="file" accept="image/*" onChange={handlePhotoUpload} />
+            {photo && (
+              <div>
+                <img
+                  src={photo}
+                  alt="UserPhotos"
+                  style={{
+                    borderRadius: "15px",
+                    marginBottom: "10px",
+                    height: "300px",
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          <Button type="submit" style={{ marginTop: "10px" }}>
+            Zarejestruj się
+          </Button>
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </Form>
       </Container>

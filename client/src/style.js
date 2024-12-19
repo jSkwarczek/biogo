@@ -36,6 +36,16 @@ const Form = styled.form`
   opacity: 0.92;
 `;
 
+const DefNotForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: #433b7c;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 1;
+`;
+
 const Title = styled.h1`
   margin-bottom: 20px;
   text-align: center;
@@ -147,6 +157,7 @@ const Secret = styled.p`
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 20px;
+  text-align: center;
 `;
 
 const Instructions = styled.p`
@@ -182,4 +193,5 @@ export {
   QRCodeContainer,
   QRCodeInstructions,
   SmallButton,
+  DefNotForm,
 };
