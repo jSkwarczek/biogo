@@ -66,4 +66,5 @@ def train_test_model(name):
     append_new_face_to_model(name, encs)
 
 if __name__ == "__main__":
-    pass
+    tymon = encode_img("train/tyler.jpg")
+    print(recognize_face(tymon))

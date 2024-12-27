@@ -2,3 +2,4 @@ settings/
 db/
 model/.venv
 model/train
+model/__pycache__

@@ -17,12 +17,22 @@ type BasicResponse struct {
 	Message string `json:"message"`
 }
 
+type ModelResponse struct {
+	Status string `json:"status"`
+}
+
 type RegisterData struct {
-	Username       string `json:"username"`
-	Password       string `json:"password"`
-	Email          string `json:"email"`
-	EnableEmail2FA bool   `json:"enableEmail2FA"`
-	EnableTOTP     bool   `json:"enableTOTP"`
+	Username       string   `json:"username"`
+	Password       string   `json:"password"`
+	Email          string   `json:"email"`
+	EnableEmail2FA bool     `json:"enableEmail2FA"`
+	EnableTOTP     bool     `json:"enableTOTP"`
+	Photos         []string `json:"photos"`
+}
+
+type PhotoRegisterRequest struct {
+	Username string   `json:"username"`
+	Photos   []string `json:"photos"`
 }
 
 type RegisterResponse struct {
@@ -36,6 +46,12 @@ type VerifyData struct {
 	Totp      string `json:"totp"`
 	Email2FA  bool   `json:"email_2fa"`
 	EnableOTP bool   `json:"enable_otp"`
+	Photo     string `json:"photo"`
+}
+
+type BioCheckRequest struct {
+	Username string `json:"username"`
+	Photo    string `json:"photo"`
 }
 
 type UserLoggedInS struct {

@@ -3,8 +3,10 @@ package main
 import (
 	"biogo/funcs"
 	"biogo/structs"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -144,6 +146,41 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	otpSecret, url := funcs.GenerateSecret(rd.Username)
 
+	photosRequest := structs.PhotoRegisterRequest{
+		Username: rd.Username,
+		Photos:   rd.Photos}
+
+	photosData, err := json.Marshal(photosRequest)
+	if err != nil {
+		encodeError(w, "Cannot marshal JSON for model request.")
+	}
+
+	resp, err := http.Post(
+		"http://localhost:7000/add_to_model",
+		"application/json",
+		bytes.NewBuffer(photosData))
+
+	if err != nil {
+		encodeError(w, "Cannot send model request.")
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		encodeError(w, "Cannot read model response.")
+	}
+
+	var modelResponse structs.ModelResponse
+	err = json.Unmarshal(body, &modelResponse)
+	if err != nil {
+		encodeError(w, "Cannot unmarchal model response.")
+	}
+
+	if modelResponse.Status != "success" {
+		encodeError(w, "Cannot add face to model.")
+	}
+
 	var response any
 
 	err = db.Register(rd.Username, rd.Password, rd.Email, otpSecret, rd.EnableEmail2FA, rd.EnableTOTP)
@@ -153,6 +190,7 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 		response = structs.BasicResponse{Status: "error", Message: "User already exists."}
 		w.WriteHeader(http.StatusUnauthorized)
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 }
@@ -193,9 +231,41 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(validateTotp)
+
+	bioCheck := structs.BioCheckRequest{
+		Username: fmt.Sprintf("%v", username),
+		Photo:    vd.Photo}
+
+	bioCheckData, err := json.Marshal(bioCheck)
+	if err != nil {
+		encodeError(w, "Cannot marchal JSON for model request.")
+	}
+
+	resp, err := http.Post(
+		"http://localhost:7000/match",
+		"application/json",
+		bytes.NewBuffer(bioCheckData))
+	if err != nil {
+		encodeError(w, "Cannot send request to model.")
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		encodeError(w, "Cannot read model response.")
+	}
+
+	var modelResponse structs.ModelResponse
+	err = json.Unmarshal(body, &modelResponse)
+	if err != nil {
+		encodeError(w, "Cannot unmarchal model response.")
+	}
+
+	validateBio := modelResponse.Status == "success"
+
 	var response structs.BasicResponse
 
-	if validateTotp && validateEmailMfa {
+	if validateTotp && validateEmailMfa && validateBio {
 		session.Values["mfa_verified"] = true
 		session.Values["mfa_code"] = nil
 		err = session.Save(r, w)

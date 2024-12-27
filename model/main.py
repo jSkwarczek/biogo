@@ -6,13 +6,13 @@ app = Flask(__name__)
 @app.route("/add_to_model", methods=["POST"])
 def add_to_model():
     contents = request.json
-    append_new_face_to_model(contents["username"], contents["imgs"])
+    append_new_face_to_model(contents["username"], contents["photos"])
     return jsonify({"status": "success"})
 
 @app.route("/match", methods=["POST"])
 def match():
     contents = request.json
-    username = recognize_face(contents["img"])
+    username = recognize_face(contents["photo"])
     if username != contents["username"] or username is None:
         return jsonify({"status": "error"})
 
