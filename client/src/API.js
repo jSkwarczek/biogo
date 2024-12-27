@@ -14,7 +14,8 @@ const API = {
     email,
     secondEmail,
     enableEmail2FA,
-    enableTOTP
+    enableTOTP,
+    photos
   ) => {
     return fetch("/api/register", {
       method: "POST",
@@ -29,16 +30,17 @@ const API = {
         enableEmail2FA,
         enableTOTP,
         otpSecret: "",
+        photos,
       }),
     }).then((res) => res.json());
   },
-  verifyMFA: (code, totp, email_2fa, enable_otp) => {
+  verifyMFA: (code, totp, email_2fa, enable_otp, photo) => {
     return fetch("/api/verify_mfa", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ code, totp, email_2fa, enable_otp }),
+      body: JSON.stringify({ code, totp, email_2fa, enable_otp, photo }),
     }).then((res) => res.json());
   },
   logout: () => {
