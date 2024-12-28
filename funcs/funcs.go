@@ -1,6 +1,8 @@
 package funcs
 
 import (
+	"biogo/structs"
+	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -11,6 +13,7 @@ import (
 	"gopkg.in/gomail.v2"
 	"io"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -249,3 +252,55 @@ func (db *DB) PrintDb() error {
 
 	return err
 }
+
+func EncodeError(w http.ResponseWriter, errorMsg string) {
+	response := structs.BasicResponse{Status: "error", Message: errorMsg}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Total failure.", http.StatusInternalServerError)
+	}
+	return
+}
+
+func SendRequestToModel(data any, addr string) (bool, error) {
+	byteData, err := json.Marshal(data)
+	if err != nil {
+		return false, errors.New("Cannot marshal JSON for model request.")
+	}
+
+	resp, err := http.Post(
+		addr,
+		"application/json",
+		bytes.NewBuffer(byteData))
+
+	if err != nil {
+		return false, errors.New("Cannot send model request.")
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, errors.New("Cannot read model response.")
+	}
+
+	var modelResponse structs.ModelResponse
+	err = json.Unmarshal(body, &modelResponse)
+	if err != nil {
+		return false, errors.New("Cannot unmarchal model response.")
+	}
+
+	if modelResponse.Status != "success" {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// func CheckAndEncodeError(w http.ResponseWriter, e error, errorMsg string) {
+// 	if e != nil {
+// 		EncodeError(w, errorMsg)
+// 	}
+// }

@@ -3,10 +3,8 @@ package main
 import (
 	"biogo/funcs"
 	"biogo/structs"
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -51,17 +49,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
 
-func encodeError(w http.ResponseWriter, errorMsg string) {
-	response := structs.BasicResponse{Status: "error", Message: errorMsg}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusUnauthorized)
-	err := json.NewEncoder(w).Encode(response)
-	if err != nil {
-		http.Error(w, "Total failure.", http.StatusInternalServerError)
-	}
-	return
-}
-
 func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed.", http.StatusMethodNotAllowed)
@@ -71,20 +58,20 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	var ld structs.LoginData
 	err := json.NewDecoder(r.Body).Decode(&ld)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 
 	session, _ := store.Get(r, "session")
 
 	if !db.Login(ld.Username, ld.Password) {
-		encodeError(w, "Login or username incorrect.")
+		funcs.EncodeError(w, "Login or username incorrect.")
 		return
 	}
 
 	user, err := db.GetUserData(ld.Username)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 
@@ -100,7 +87,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(code)
 		err = funcs.SendEmail(user.UserD.Email, code)
 		if err != nil {
-			encodeError(w, err.Error())
+			funcs.EncodeError(w, err.Error())
 			return
 		}
 		session.Values["mfa_code"] = code
@@ -108,7 +95,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = session.Save(r, w)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 
@@ -120,7 +107,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 	return
@@ -135,12 +122,12 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 	var rd structs.RegisterData
 	err := json.NewDecoder(r.Body).Decode(&rd)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 
 	if rd.Username == "" || rd.Email == "" || rd.Password == "" {
-		encodeError(w, "Blank user info.")
+		funcs.EncodeError(w, "Blank user info.")
 		return
 	}
 
@@ -150,35 +137,15 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 		Username: rd.Username,
 		Photos:   rd.Photos}
 
-	photosData, err := json.Marshal(photosRequest)
+	success, err := funcs.SendRequestToModel(photosRequest, "http://localhost:7000/add_to_model")
 	if err != nil {
-		encodeError(w, "Cannot marshal JSON for model request.")
+		funcs.EncodeError(w, err.Error())
+		return
 	}
 
-	resp, err := http.Post(
-		"http://localhost:7000/add_to_model",
-		"application/json",
-		bytes.NewBuffer(photosData))
-
-	if err != nil {
-		encodeError(w, "Cannot send model request.")
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		encodeError(w, "Cannot read model response.")
-	}
-
-	var modelResponse structs.ModelResponse
-	err = json.Unmarshal(body, &modelResponse)
-	if err != nil {
-		encodeError(w, "Cannot unmarchal model response.")
-	}
-
-	if modelResponse.Status != "success" {
-		encodeError(w, "Cannot add face to model.")
+	if !success {
+		funcs.EncodeError(w, "Cannot add face to model.")
+		return
 	}
 
 	var response any
@@ -205,7 +172,7 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 	var vd structs.VerifyData
 	err := json.NewDecoder(r.Body).Decode(&vd)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 
@@ -223,7 +190,7 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 		})
 
 		if err != nil {
-			encodeError(w, err.Error())
+			funcs.EncodeError(w, err.Error())
 			return
 		}
 	} else {
@@ -236,32 +203,11 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 		Username: fmt.Sprintf("%v", username),
 		Photo:    vd.Photo}
 
-	bioCheckData, err := json.Marshal(bioCheck)
+	validateBio, err := funcs.SendRequestToModel(bioCheck, "http://localhost:7000/match")
 	if err != nil {
-		encodeError(w, "Cannot marchal JSON for model request.")
+		funcs.EncodeError(w, err.Error())
+		return
 	}
-
-	resp, err := http.Post(
-		"http://localhost:7000/match",
-		"application/json",
-		bytes.NewBuffer(bioCheckData))
-	if err != nil {
-		encodeError(w, "Cannot send request to model.")
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		encodeError(w, "Cannot read model response.")
-	}
-
-	var modelResponse structs.ModelResponse
-	err = json.Unmarshal(body, &modelResponse)
-	if err != nil {
-		encodeError(w, "Cannot unmarchal model response.")
-	}
-
-	validateBio := modelResponse.Status == "success"
 
 	var response structs.BasicResponse
 
@@ -270,7 +216,7 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 		session.Values["mfa_code"] = nil
 		err = session.Save(r, w)
 		if err != nil {
-			encodeError(w, err.Error())
+			funcs.EncodeError(w, err.Error())
 			return
 		}
 		response = structs.BasicResponse{Status: "success", Message: "MFA verified."}
@@ -292,14 +238,14 @@ func logoutPostHandler(w http.ResponseWriter, r *http.Request) {
 	session.Values["mfa_verified"] = false
 	err := session.Save(r, w)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 	response := structs.BasicResponse{Status: "success", Message: "Logged out."}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 }
@@ -321,7 +267,7 @@ func isLoggedInGetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 }
@@ -344,7 +290,7 @@ func userGetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		encodeError(w, err.Error())
+		funcs.EncodeError(w, err.Error())
 		return
 	}
 }
