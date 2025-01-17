@@ -32,6 +32,13 @@ func main() {
 		}
 	}()
 
+	// db.DeleteUser("kuba")
+	// db.DeleteUser("tymek")
+	// db.DeleteUser("tymek2")
+	// db.DeleteUser("tymek3")
+	// db.DeleteUser("kuba_test")
+	// db.DeleteUser("tymek_test")
+
 	http.HandleFunc("/login", loginPostHandler)
 	http.HandleFunc("/logout", logoutPostHandler)
 	http.HandleFunc("/register", registerPostHandler)
@@ -206,6 +213,13 @@ func verifyMfaPostHandler(w http.ResponseWriter, r *http.Request) {
 	validateBio, err := funcs.SendRequestToModel(bioCheck, "http://localhost:7000/match")
 	if err != nil {
 		funcs.EncodeError(w, err.Error())
+		return
+	}
+
+	fmt.Println(validateBio, err)
+
+	if !validateBio && err == nil {
+		funcs.EncodeError(w, "Face do not match!")
 		return
 	}
 
