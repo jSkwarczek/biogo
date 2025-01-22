@@ -8,6 +8,7 @@ import {
   Input,
   Title,
   DefNotForm,
+  ErrorMessage,
 } from "./style";
 import Webcam from "react-webcam";
 
@@ -17,6 +18,7 @@ const MFA = () => {
   const webcamRef = useRef(null);
   const [photo, setPhoto] = useState(null);
   const [photoConfirmed, setPhotoConfirmed] = useState(false);
+  const [error, setError] = useState("");
   const { verifyMFA, isEmail2FAEnabled, isTOTPEnabled } =
     useContext(AuthContext);
 
@@ -27,9 +29,11 @@ const MFA = () => {
       .then((response) => {
         if (response.status !== "success") {
           console.error("MFA verification failed");
+          setError("MFA verification failed!");
         }
       })
       .catch((error) => {
+        setError("Error during MFA verification: " + error.message);
         console.error("Error during MFA verification:", error);
       });
   };
@@ -77,6 +81,7 @@ const MFA = () => {
               />
             )}
             <Button>Submit</Button>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
           </Form>
         )}
         {!photoConfirmed && (
@@ -94,6 +99,8 @@ const MFA = () => {
                   style={{
                     borderRadius: "15px",
                     marginBottom: "10px",
+                    height: "60vh",
+                    alignSelf: "center",
                   }}
                 />
                 <Button onClick={handleTakePhoto}>Zrób zdjęcie</Button>

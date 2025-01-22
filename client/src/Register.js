@@ -137,43 +137,13 @@ const Register = () => {
               {passwordStrength}
             </span>
           </CheckboxLabel>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <SmallButton
-              type="button"
-              onClick={() => setMultipleEmails(true)}
-              disabled={multipleEmails}
-              style={{ backgroundColor: multipleEmails ? "gray" : "" }}
-            >
-              +
-            </SmallButton>
-          </div>
-          {multipleEmails && (
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <Input
-                type="email"
-                placeholder="Dodatkowy email"
-                value={email2}
-                onChange={(e) => setEmail2(e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <SmallButton
-                type="button"
-                onClick={() => {
-                  setMultipleEmails(false);
-                  setEmail2("");
-                }}
-              >
-                -
-              </SmallButton>
-            </div>
-          )}
+          <Input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ flex: 1 }}
+          />
           <CheckboxContainer>
             <CheckboxLabel>
               <Checkbox

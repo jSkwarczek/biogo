@@ -37,7 +37,7 @@ const Login = () => {
         }
       })
       .catch((error) => {
-        setError("Błąd podczas logowania: " + error.message);
+        setError("Error during login: " + error.message);
         setIsSubmitting(false);
         console.error("Error during login:", error);
       });
