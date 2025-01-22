@@ -6,8 +6,11 @@ app = Flask(__name__)
 @app.route("/add_to_model", methods=["POST"])
 def add_to_model():
     contents = request.json
-    append_new_face_to_model(contents["username"], contents["photos"])
-    return jsonify({"status": "success"})
+    res = append_new_face_to_model(contents["username"], contents["photos"])
+    if res:
+        return jsonify({"status": "success"})
+
+    return jsonify({"status": "error"})
 
 @app.route("/match", methods=["POST"])
 def match():

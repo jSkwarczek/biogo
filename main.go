@@ -151,7 +151,7 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !success {
-		funcs.EncodeError(w, "Cannot add face to model.")
+		funcs.EncodeError(w, "Cannot add face to model. Face not found.")
 		return
 	}
 

@@ -12,16 +12,23 @@ def encode_face(img_base64):
     image_data = io.BytesIO(base64.b64decode(img_base64.split(",")[1]))
     image = Image.open(image_data)
     image_np = np.array(image)
-
     return fr.face_encodings(image_np)
 
 def append_new_face_to_model(username, user_imgs_base64):
     encodings = []
     for user_img in user_imgs_base64:
-        encodings.append(encode_face(user_img))
+        state = True
+        enc = encode_face(user_img)
+        for value in enc:
+            if value != 0:
+                state = False
+        if state:
+            return False
+        encodings.append(enc)
+
 
     user_encoding = {"username": username, "encodings": encodings}
-
+    
     with DEFAULT_ENC_LOC.open("rb") as f:
         try:
             encodings_list = pickle.load(f)
@@ -32,10 +39,12 @@ def append_new_face_to_model(username, user_imgs_base64):
         encodings_list.append(user_encoding)
         pickle.dump(encodings_list, f)
 
+    return True
+
 def recognize_face(img_base64):
     with DEFAULT_ENC_LOC.open("rb") as f:
         encodings = pickle.load(f)
-
+        
     new_enc = encode_face(img_base64)
     matches = {}
 
