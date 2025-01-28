@@ -34,6 +34,7 @@ const Register = () => {
   const [enableTOTP, setEnableTOTP] = useState(false);
   const [error, setError] = useState("");
   const [photos, setPhotos] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handlePhotoUpload = (e) => {
@@ -63,6 +64,9 @@ const Register = () => {
       setError("Please upload at least three photos.");
       return;
     }
+
+    setIsSubmitting(true);
+    
     API.register(
       username,
       password,
@@ -88,6 +92,9 @@ const Register = () => {
       .catch((error) => {
         setError("Error during registration");
         console.error("Error during registration:", error);
+      })
+      .finally(() => {
+        setIsSubmitting(false); // Ustawiamy isSubmitting na false po zakończeniu
       });
   };
 
@@ -171,8 +178,8 @@ const Register = () => {
               onChange={handlePhotoUpload}
             />
           </div>
-          <Button type="submit" style={{ marginTop: "10px" }}>
-            Zarejestruj się
+          <Button type="submit" style={{ marginTop: "10px" }} disabled={isSubmitting}>
+            {isSubmitting ? "Rejestrowanie..." : "Zarejestruj się"}
           </Button>
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </Form>

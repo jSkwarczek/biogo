@@ -15,7 +15,7 @@ def add_to_model():
 @app.route("/match", methods=["POST"])
 def match():
     contents = request.json
-    username = recognize_face(contents["photo"])
+    username = recognize_face(contents["photo"], None)
     if username != contents["username"] or username is None:
         return jsonify({"status": "error"})
 
