@@ -20,7 +20,7 @@ def append_new_face_to_model(username, user_imgs_base64):
         state = True
         enc = encode_face(user_img)
         for value in enc:
-            if value != 0:
+            if value.all() != 0:
                 state = False
         if state:
             return False
