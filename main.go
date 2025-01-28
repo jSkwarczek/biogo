@@ -32,13 +32,6 @@ func main() {
 		}
 	}()
 
-	// db.DeleteUser("kuba")
-	// db.DeleteUser("tymek")
-	// db.DeleteUser("tymek2")
-	// db.DeleteUser("tymek3")
-	// db.DeleteUser("kuba_test")
-	// db.DeleteUser("tymek_test")
-
 	http.HandleFunc("/login", loginPostHandler)
 	http.HandleFunc("/logout", logoutPostHandler)
 	http.HandleFunc("/register", registerPostHandler)
@@ -48,6 +41,7 @@ func main() {
 	http.HandleFunc("/is_logged_in", isLoggedInGetHandler)
 
 	http.HandleFunc("/debug", debugGetHandler)
+	http.HandleFunc("/delete", deleteGetHandler)
 
 	store = sessions.NewCookieStore([]byte("janielubiecreepery"))
 
@@ -323,6 +317,17 @@ func debugGetHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = fmt.Fprintf(w, `Check server console for more informations!`)
 	if err != nil {
 		log.Fatal(err)
+	}
+	return
+}
+
+func deleteGetHandler(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	if params.Has("user") {
+		db.DeleteUser(params.Get("user"))
+		fmt.Printf("User %s got deleted.\n", params.Get("user"))
+	} else {
+		fmt.Println("No username provided!")
 	}
 	return
 }
